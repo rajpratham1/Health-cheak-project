@@ -25,6 +25,11 @@ export default function Header() {
                 </Link>
               </li>
               <li>
+                <Link href="/guide" className="text-sm font-medium transition-colors hover:text-blue-600">
+                  Healthy Living Guide
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className="text-sm font-medium transition-colors hover:text-blue-600">
                   About
                 </Link>
