@@ -7,6 +7,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   healthCategories,
   getRiskColor,
@@ -14,6 +15,7 @@ import {
   type HealthAssessment,
   type RiskLevel,
 } from "@/lib/health-data"
+import { generateReportLetter, downloadTextReport, shareReport, downloadCSVReport } from "@/lib/report-generator"
 import {
   Heart,
   TreesIcon as Lungs,
@@ -30,6 +32,8 @@ import {
   Share2,
   RefreshCw,
   MessageSquare,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react"
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -50,6 +54,9 @@ const iconMap: Record<string, React.ReactNode> = {
 export default function ResultsPage() {
   const [assessment, setAssessment] = useState<HealthAssessment | null>(null)
   const [loading, setLoading] = useState(true)
+  const [generatingReport, setGeneratingReport] = useState(false)
+  const [generatingShare, setGeneratingShare] = useState(false)
+  const [reportName, setReportName] = useState("")
 
   useEffect(() => {
     const storedAssessment = localStorage.getItem("healthAssessment")
@@ -58,6 +65,50 @@ export default function ResultsPage() {
     }
     setLoading(false)
   }, [])
+
+  const handleDownloadReport = async () => {
+    if (!assessment) return
+
+    setGeneratingReport(true)
+    try {
+      let letterContent = generateReportLetter(assessment)
+      if (reportName.trim()) {
+        letterContent = `Name: ${reportName}\n\n` + letterContent
+      }
+      downloadTextReport(letterContent, `health-assessment-report-${reportName || "user"}-${new Date().toISOString().split("T")[0]}.txt`)
+    } catch (error) {
+      console.error("Error generating report:", error)
+      alert("Error generating report. Please try again.")
+    } finally {
+      setGeneratingReport(false)
+    }
+  }
+
+  const handleDownloadCSV = () => {
+    if (!assessment) return
+
+    try {
+      downloadCSVReport(assessment)
+    } catch (error) {
+      console.error("Error generating CSV:", error)
+      alert("Error generating CSV. Please try again.")
+    }
+  }
+
+  const handleShareResults = async () => {
+    if (!assessment) return
+
+    setGeneratingShare(true)
+    try {
+      const letterContent = generateReportLetter(assessment)
+      await shareReport(letterContent)
+    } catch (error) {
+      console.error("Error sharing report:", error)
+      alert("Error sharing report. Please try again.")
+    } finally {
+      setGeneratingShare(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -106,9 +157,20 @@ export default function ResultsPage() {
 
   return (
     <div className="container mx-auto px-4 py-12">
+      {/* IMPORTANT DISCLAIMER SECTION */}
+      <Alert className="mb-8 border-amber-500 bg-amber-50 dark:bg-amber-950/30">
+        <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <AlertDescription className="text-amber-900 dark:text-amber-200">
+          <strong>Important Disclaimer:</strong> This health assessment is a self-evaluation tool only and NOT a 
+          substitute for professional medical advice, diagnosis, or treatment. The suggestions provided are general 
+          wellness recommendations. Please consult a qualified healthcare professional for medical decisions. 
+          This tool is for informational purposes only.
+        </AlertDescription>
+      </Alert>
+
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold">Your Health Assessment Results</h1>
-        <p className="text-muted-foreground">Review your personalized health insights and recommendations.</p>
+        <p className="text-muted-foreground">Review your personalized health insights and suggestions. Remember, only healthcare professionals can diagnose conditions.</p>
       </div>
 
       <div className="mb-8 grid gap-6 md:grid-cols-2">
@@ -285,14 +347,44 @@ export default function ResultsPage() {
         })}
       </Tabs>
 
-      <div className="flex flex-wrap gap-4">
-        <Button variant="outline" className="flex items-center gap-2">
+      {/* name input for report personalization */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium">Enter your name for the report</label>
+        <input
+          type="text"
+          value={reportName}
+          onChange={(e) => setReportName(e.target.value)}
+          placeholder="Your name"
+          className="mt-1 w-full rounded border px-2 py-1"
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-4 mb-8">
+        <Button 
+          variant="outline" 
+          className="flex items-center gap-2"
+          onClick={handleDownloadReport}
+          disabled={generatingReport}
+        >
           <Download className="h-4 w-4" />
-          Download Report
+          {generatingReport ? "Generating..." : "Download Letter Report"}
         </Button>
-        <Button variant="outline" className="flex items-center gap-2">
+        <Button 
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={handleDownloadCSV}
+        >
+          <Download className="h-4 w-4" />
+          Download Data (CSV)
+        </Button>
+        <Button 
+          variant="outline" 
+          className="flex items-center gap-2"
+          onClick={handleShareResults}
+          disabled={generatingShare}
+        >
           <Share2 className="h-4 w-4" />
-          Share Results
+          {generatingShare ? "Preparing..." : "Share Results"}
         </Button>
         <Link href="/assessment">
           <Button variant="outline" className="flex items-center gap-2">
@@ -303,10 +395,108 @@ export default function ResultsPage() {
         <Link href="/contact">
           <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
             <MessageSquare className="h-4 w-4" />
-            Contact Doctor
+            Consult Doctor
           </Button>
         </Link>
       </div>
+
+      {/* IMPORTANT HEALTH INFORMATION SECTION */}
+      <div className="mb-8 grid gap-6 md:grid-cols-2">
+        <Card className="border-blue-200 dark:border-blue-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+              <CheckCircle className="h-5 w-5" />
+              Health Tips for You
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div>
+              <h4 className="font-semibold mb-2">Daily Habits to Improve Wellness:</h4>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <li>Walk for 30 minutes daily</li>
+                <li>Drink 8-10 glasses of water</li>
+                <li>Eat colorful vegetables and fruits</li>
+                <li>Sleep 7-9 hours every night</li>
+                <li>Practice deep breathing or meditation</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-red-200 dark:border-red-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
+              <AlertCircle className="h-5 w-5" />
+              When to See a Doctor
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <div>
+              <h4 className="font-semibold mb-2">Seek medical attention if you experience:</h4>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <li>Severe chest pain or pressure</li>
+                <li>Persistent fever over 102°F (39°C)</li>
+                <li>Difficulty breathing</li>
+                <li>Severe headaches with confusion</li>
+                <li>Any symptom lasting more than 2 weeks</li>
+              </ul>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* PREVENTIVE CARE SECTION */}
+      <Card className="mb-8 border-green-200 dark:border-green-800">
+        <CardHeader>
+          <CardTitle className="text-green-700 dark:text-green-300">Preventive Care Checklist</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <h4 className="font-semibold mb-3">Regular Check-ups:</h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded border border-gray-400"></div>
+                  Annual physical examination
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded border border-gray-400"></div>
+                  Blood pressure monitoring
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded border border-gray-400"></div>
+                  Cholesterol screening
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded border border-gray-400"></div>
+                  Age-appropriate cancer screenings
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Lifestyle Maintenance:</h4>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded border border-gray-400"></div>
+                  150 mins moderate exercise weekly
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded border border-gray-400"></div>
+                  Balanced nutrition plan
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded border border-gray-400"></div>
+                  Stress management practices
+                </li>
+                <li className="flex items-center gap-2">
+                  <div className="h-4 w-4 rounded border border-gray-400"></div>
+                  Monthly self-assessments
+                </li>
+              </ul>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

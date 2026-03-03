@@ -103,4 +103,29 @@ This project is licensed under the MIT License - see the `LICENSE.md` file for d
 
 ---
 
+
+
+## 🔐 Firestore Rules
+By default the remote Firestore database has **secure rules**. During development, to allow the app to read/write user data, configure your Firestore rules with something like:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // allow users to read/write their own documents
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /assessments/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == request.resource.data.userId;
+    }
+  }
+}
+```
+
+Make sure to deploy these rules via the Firebase console or CLI.
+
+## 📝 Report Personalization
+Users can enter their name on the results page before downloading a report. The input field appears above the download button and the generated file includes the name in its contents and filename.
+
 © 2025 HealthCheck. All rights reserved.

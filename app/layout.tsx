@@ -13,7 +13,11 @@ export const metadata: Metadata = {
   title: "Health Check | Personalized Health Insights",
   description:
     "Get personalized health insights based on a structured question-and-answer system for various body parts.",
-    generator: 'v0.dev'
+    generator: 'v0.dev',
+}
+
+export function generateViewport() {
+  return "width=device-width, initial-scale=1"
 }
 
 export default function RootLayout({

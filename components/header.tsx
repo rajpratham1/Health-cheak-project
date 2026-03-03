@@ -1,9 +1,20 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Heart } from "lucide-react"
 import { ModeToggle } from "./mode-toggle"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function Header() {
+  const { user, signInWithGoogle, signOutUser } = useAuth()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <header className="border-b">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -30,6 +41,11 @@ export default function Header() {
                 </Link>
               </li>
               <li>
+                <Link href="/library" className="text-sm font-medium transition-colors hover:text-blue-600">
+                  Library
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className="text-sm font-medium transition-colors hover:text-blue-600">
                   About
                 </Link>
@@ -41,12 +57,23 @@ export default function Header() {
               </li>
             </ul>
           </nav>
+          <div className="flex items-center gap-2 md:gap-4">
           <ModeToggle />
-          <Link href="/assessment">
-            <Button variant="outline" className="hidden md:inline-flex">
-              Start Assessment
+          <Link href="/assessment" className="hidden sm:inline">
+            <Button variant="outline" className="text-sm">
+              Assessment
             </Button>
           </Link>
+
+          {mounted && (user ? (
+            <div className="flex items-center gap-2">
+              <div className="text-xs sm:text-sm hidden sm:inline">{user.displayName || user.email}</div>
+              <Button variant="ghost" onClick={signOutUser} className="text-xs sm:text-sm">Sign out</Button>
+            </div>
+          ) : (
+            <Button onClick={signInWithGoogle} className="text-xs sm:text-sm">Sign in</Button>
+          ))}
+        </div>
         </div>
       </div>
     </header>
