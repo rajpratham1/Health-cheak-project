@@ -13,7 +13,11 @@ export const metadata: Metadata = {
   title: "Health Check | Personalized Health Insights",
   description:
     "Get personalized health insights based on a structured question-and-answer system for various body parts.",
-    generator: 'v0.dev'
+    generator: 'v0.dev',
+}
+
+export function generateViewport() {
+  return "width=device-width, initial-scale=1"
 }
 
 export default function RootLayout({
@@ -22,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <BackgroundPattern />

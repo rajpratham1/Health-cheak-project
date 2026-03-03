@@ -1,8 +1,9 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Heart, Brain, Apple, Dumbbell, Droplet, Moon, Smile, Leaf, Clock, Sparkles } from "lucide-react"
+import { Heart, Brain, Apple, Dumbbell, Droplet, Moon, Smile, Leaf, Clock, Sparkles, AlertCircle, CheckCircle } from "lucide-react"
 
 export default function HealthyLivingGuidePage() {
   return (
@@ -10,6 +11,53 @@ export default function HealthyLivingGuidePage() {
       <div className="mb-12 text-center">
         <h1 className="mb-4 text-4xl font-bold tracking-tight md:text-5xl">🧠 Healthy Living Guide</h1>
         <p className="mx-auto max-w-3xl text-lg text-muted-foreground">Practical Knowledge for a Long, Active Life</p>
+      </div>
+
+      {/* IMPORTANT DISCLAIMERS AND SAFETY INFORMATION */}
+      <div className="mb-12 space-y-4">
+        <Alert className="border-amber-500 bg-amber-50 dark:bg-amber-950/30">
+          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <AlertDescription className="text-amber-900 dark:text-amber-200">
+            <strong>Important Medical Disclaimer:</strong> This guide provides general health and wellness information 
+            only. It is NOT a substitute for professional medical advice, diagnosis, or treatment. Always consult a 
+            qualified healthcare provider before making significant health changes or if you have health concerns.
+          </AlertDescription>
+        </Alert>
+
+        <Card className="border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+              <CheckCircle className="h-5 w-5" />
+              When to See a Healthcare Professional
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <h4 className="font-semibold mb-3 text-sm text-emerald-900 dark:text-emerald-100">Seek Immediate Care For:</h4>
+                <ul className="space-y-2 text-sm text-emerald-800 dark:text-emerald-200">
+                  <li>• Severe chest pain or pressure</li>
+                  <li>• Difficulty breathing or shortness of breath</li>
+                  <li>• Signs of stroke (facial drooping, arm weakness, speech difficulty)</li>
+                  <li>• Severe allergic reactions</li>
+                  <li>• Severe bleeding or injuries</li>
+                  <li>• Loss of consciousness</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-3 text-sm text-emerald-900 dark:text-emerald-100">Schedule an Appointment For:</h4>
+                <ul className="space-y-2 text-sm text-emerald-800 dark:text-emerald-200">
+                  <li>• Persistent symptoms lasting 2+ weeks</li>
+                  <li>• Uncontrolled pain or discomfort</li>
+                  <li>• Significant weight changes</li>
+                  <li>• Recurring headaches or dizziness</li>
+                  <li>• Sleep problems or fatigue</li>
+                  <li>• Annual health check-ups</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="overview" className="mb-12">

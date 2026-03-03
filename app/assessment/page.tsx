@@ -10,6 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { healthCategories, type HealthAssessment } from "@/lib/health-data"
+import { saveAssessment } from "@/lib/firestore-utils"
+import { useAuth } from "@/hooks/useAuth"
 import {
   Heart,
   TreesIcon as Lungs,
@@ -47,6 +49,8 @@ export default function AssessmentPage() {
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0)
   const [answers, setAnswers] = useState<Record<string, Record<string, string>>>({})
   const [progress, setProgress] = useState(0)
+  const [demographics, setDemographics] = useState<{ age?: string; gender?: string; height?: string; weight?: string } | null>(null)
+  const { user } = useAuth()
 
   const currentCategory = healthCategories[currentCategoryIndex]
   const totalCategories = healthCategories.length
@@ -114,6 +118,13 @@ export default function AssessmentPage() {
       // Store assessment in localStorage
       localStorage.setItem("healthAssessment", JSON.stringify(assessment))
 
+      // Save to Firestore (if available)
+      try {
+        saveAssessment(assessment, demographics, user?.uid)
+      } catch (err) {
+        console.error("Error saving assessment to Firestore:", err)
+      }
+
       // Navigate to results page
       router.push("/assessment/results")
     }
@@ -132,6 +143,59 @@ export default function AssessmentPage() {
         <h1 className="mb-2 text-3xl font-bold">Health Assessment</h1>
         <p className="text-muted-foreground">Answer the following questions to get personalized health insights.</p>
       </div>
+
+      {/* Demographics form for better personalization */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>About You (optional)</CardTitle>
+          <CardDescription>Provide age and basic info to improve recommendations.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div>
+              <label className="block text-sm font-medium">Age</label>
+              <input
+                type="number"
+                min={1}
+                value={demographics?.age || ""}
+                onChange={(e) => setDemographics({ ...(demographics || {}), age: e.target.value })}
+                className="mt-1 w-full rounded border px-2 py-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Gender</label>
+              <select
+                value={demographics?.gender || ""}
+                onChange={(e) => setDemographics({ ...(demographics || {}), gender: e.target.value })}
+                className="mt-1 w-full rounded border px-2 py-1"
+              >
+                <option value="">Prefer not to say</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Height (cm)</label>
+              <input
+                type="number"
+                value={demographics?.height || ""}
+                onChange={(e) => setDemographics({ ...(demographics || {}), height: e.target.value })}
+                className="mt-1 w-full rounded border px-2 py-1"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Weight (kg)</label>
+              <input
+                type="number"
+                value={demographics?.weight || ""}
+                onChange={(e) => setDemographics({ ...(demographics || {}), weight: e.target.value })}
+                className="mt-1 w-full rounded border px-2 py-1"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="mb-8">
         <div className="mb-2 flex items-center justify-between">
