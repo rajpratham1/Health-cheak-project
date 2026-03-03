@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
 
 export default function Header() {
-  const { user, signInWithGoogle, signOutUser } = useAuth()
+  const { user, loading, signInWithGoogle, signOutUser } = useAuth()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -55,6 +55,11 @@ export default function Header() {
                   Contact Doctor
                 </Link>
               </li>
+              <li>
+                <Link href="/dashboard" className="text-sm font-medium transition-colors hover:text-blue-600">
+                  Dashboard
+                </Link>
+              </li>
             </ul>
           </nav>
           <div className="flex items-center gap-2 md:gap-4">
@@ -65,13 +70,17 @@ export default function Header() {
             </Button>
           </Link>
 
-          {mounted && (user ? (
+          {mounted && !loading && (user ? (
             <div className="flex items-center gap-2">
               <div className="text-xs sm:text-sm hidden sm:inline">{user.displayName || user.email}</div>
               <Button variant="ghost" onClick={signOutUser} className="text-xs sm:text-sm">Sign out</Button>
             </div>
           ) : (
-            <Button onClick={signInWithGoogle} className="text-xs sm:text-sm">Sign in</Button>
+            <div className="flex items-center gap-2">
+              <Link href="/login" className="text-xs sm:text-sm text-blue-600 hover:underline">Login</Link>
+              <Link href="/register" className="text-xs sm:text-sm text-blue-600 hover:underline">Register</Link>
+              <Button onClick={signInWithGoogle} className="text-xs sm:text-sm">Google</Button>
+            </div>
           ))}
         </div>
         </div>

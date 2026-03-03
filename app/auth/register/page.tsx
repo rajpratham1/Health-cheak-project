@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useAuth } from "@/hooks/useAuth"
 
 export default function RegisterPage() {
@@ -19,8 +20,7 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       await registerWithEmail(email, password, name)
-      // after register, go to login page per request
-      router.push('/auth/login')
+      router.push("/dashboard")
     } catch (err: any) {
       setError(err?.message || 'Registration failed')
     } finally {
@@ -66,13 +66,27 @@ export default function RegisterPage() {
             <div className="flex-1 h-px bg-slate-200" />
           </div>
 
-          <button type="button" onClick={() => signInWithGoogle()} className="w-full border rounded-md py-2 flex items-center justify-center gap-2 hover:bg-slate-50 transition">
-            <img src="/images/google-icon.png" alt="google" className="w-5 h-5" />
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                setError(null)
+                await signInWithGoogle()
+                router.push("/dashboard")
+              } catch (err: any) {
+                setError(err?.message || "Google sign in failed")
+              }
+            }}
+            className="w-full border rounded-md py-2 flex items-center justify-center gap-2 hover:bg-slate-50 transition"
+          >
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-slate-700">
+              G
+            </span>
             Continue with Google
           </button>
 
           <div className="text-center text-sm text-slate-500">
-            Already have an account? <a className="text-blue-600 hover:underline" href="/auth/login">Sign in</a>
+            Already have an account? <Link className="text-blue-600 hover:underline" href="/auth/login">Sign in</Link>
           </div>
         </form>
       </div>

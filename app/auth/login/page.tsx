@@ -19,7 +19,7 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await signInWithEmail(email, password)
-      router.push('/assessment')
+      router.push("/dashboard")
     } catch (err: any) {
       setError(err?.message || 'Sign in failed')
     } finally {
@@ -61,8 +61,22 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-slate-200" />
           </div>
 
-          <button type="button" onClick={() => signInWithGoogle()} className="w-full border rounded-md py-2 flex items-center justify-center gap-2 hover:bg-slate-50 transition">
-            <img src="/images/google-icon.png" alt="google" className="w-5 h-5" />
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                setError(null)
+                await signInWithGoogle()
+                router.push("/dashboard")
+              } catch (err: any) {
+                setError(err?.message || "Google sign in failed")
+              }
+            }}
+            className="w-full border rounded-md py-2 flex items-center justify-center gap-2 hover:bg-slate-50 transition"
+          >
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-slate-700">
+              G
+            </span>
             Continue with Google
           </button>
 
